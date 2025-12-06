@@ -1,8 +1,27 @@
 import { createRoot, Root } from 'react-dom/client';
 
 import styles from './index.css?inline';
-import App from './App';
 import ShadcnContextProvider from './context/ShadcnContextProvider.tsx';
+import {
+    createHashHistory,
+    createRouter,
+    RouterProvider,
+} from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+const hashHistory = createHashHistory();
+
+const router = createRouter({
+    basepath: '/templates',
+    history: hashHistory,
+    routeTree,
+});
+
+declare module '@tanstack/react-router' {
+    interface Register {
+        router: typeof router;
+    }
+}
 
 function apply(style: string) {
     return style.replaceAll(':root', ':host');
@@ -38,8 +57,8 @@ class ShadcnCustomElement extends HTMLElement {
             this.root = createRoot(mountPoint);
             this.root.render(
                 <ShadcnContextProvider shadowRoot={this.shadowRoot}>
-                    <App />
-                </ShadcnContextProvider>,
+                    <RouterProvider router={router} />
+                </ShadcnContextProvider>
             );
         }
     }
