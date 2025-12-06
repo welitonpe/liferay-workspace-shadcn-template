@@ -1,42 +1,9 @@
 import { createRoot, Root } from 'react-dom/client';
+import { RouterProvider } from '@tanstack/react-router';
 
-import styles from './index.css?inline';
 import ShadcnContextProvider from './context/ShadcnContextProvider.tsx';
-import {
-    createHashHistory,
-    createRouter,
-    RouterProvider,
-} from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
-
-const hashHistory = createHashHistory();
-
-const router = createRouter({
-    basepath: '/templates',
-    history: hashHistory,
-    routeTree,
-});
-
-declare module '@tanstack/react-router' {
-    interface Register {
-        router: typeof router;
-    }
-}
-
-function apply(style: string) {
-    return style.replaceAll(':root', ':host');
-}
-
-const sheet = new CSSStyleSheet();
-
-sheet.replaceSync(apply(styles));
-
-if (import.meta.hot) {
-    import.meta.hot.accept('./index.css?inline', (newModule) => {
-        const _styles = newModule!.default;
-        sheet.replaceSync(apply(_styles));
-    });
-}
+import tailwindStyleSheet from './core/tailwind-ui.ts';
+import { router } from './core/tanstack-router.ts';
 
 class ShadcnCustomElement extends HTMLElement {
     private root: Root | undefined;
@@ -52,13 +19,13 @@ class ShadcnCustomElement extends HTMLElement {
             const mountPoint = document.createElement('div');
 
             this.shadowRoot!.appendChild(mountPoint);
-            this.shadowRoot!.adoptedStyleSheets = [sheet];
+            this.shadowRoot!.adoptedStyleSheets = [tailwindStyleSheet];
 
             this.root = createRoot(mountPoint);
             this.root.render(
                 <ShadcnContextProvider shadowRoot={this.shadowRoot}>
                     <RouterProvider router={router} />
-                </ShadcnContextProvider>
+                </ShadcnContextProvider>,
             );
         }
     }
